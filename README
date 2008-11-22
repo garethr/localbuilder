@@ -1,0 +1,7 @@
+Localbuilder is a simple solution to local Continuous Integration as well as being useful for a few other common tasks during development. It's written in Python but could be used on projects using any language.
+
+./localbuilder --path /path/to/watch --command /command/to/execute
+
+You can also specify the time between checks with the --period option. This defaults to 60 seconds.
+
+Basic usage involves setting it to watch your working project folder. Whenever you make changes to any of the files, localbuilder will execute the specified command. Personally I use this mainly to execute a unit test suite whenever I make changes to a project.
