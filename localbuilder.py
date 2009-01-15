@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-
 import os
 import time
 import commands
 from optparse import OptionParser
+
 
 def mtime_checker(arg, directory_name, file_list):
     """
@@ -13,9 +13,25 @@ def mtime_checker(arg, directory_name, file_list):
     """
     (mtime, modified_list) = arg
     for f in [os.path.join(directory_name, file) for file in file_list]:
-        if os.path.getmtime(f) > mtime:
-            modified_list.append(f)
+        if not skip_filepath(f):
+            if os.path.isdir(f) and __skip_extensions__:
+                # if extensions are watched, don't bother with directories
+                continue
+            if os.path.getmtime(f) > mtime:
+                modified_list.append(f)
 
+
+def skip_filepath(filepath):
+    """ return true if the passed filename can be skipped in the change
+    checker. """
+    if os.path.basename(filepath).startswith('.#') or \
+      filepath.endswith('~'):
+        # backup file
+        return True
+    
+    if os.path.splitext(filepath)[-1].lower() in __skip_extensions__:
+        return True
+    
 def get_changed_files(path, delta):
     """
     Get the list of files that have changed in 
@@ -36,11 +52,17 @@ def run_if_changes(modified_files, command_to_run):
     else:
         return False
 
-def main(path, change_period, command):
+#global __skip_extensions__
+__skip_extensions__ = []
+
+def main(path, change_period, command, skip_extensions):
     """
     Long running application which polls for changes
     and when it finds them runs a specified command.
     """
+    __skip_extensions__.extend([x.startswith('.') and x or '.'+x 
+                                for x
+                                in skip_extensions.replace(',',' ').split()])
     # keep the script running
     while 1:
         # get a list of files that have changed
@@ -66,10 +88,14 @@ if __name__ == "__main__":
                         help='time period to wait between checks'),
     parser.add_option('-c', '--command', action='store', dest='command',
                         help='command to execute'),
+    parser.add_option('--skip-extensions', action='store', dest='skip_extensions',
+                      help='extensions to skip (list by space or comma)', 
+                      default="pyc html css"),
     # parse the command arguments
     (options, args) = parser.parse_args()
     
     if options.command:
-        main(options.path, options.change_period, options.command)
+        main(options.path, int(options.change_period), options.command,
+             options.skip_extensions)
     else:
         print "you must pass a command to execute using the -c flag."
