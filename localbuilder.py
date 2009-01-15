@@ -62,7 +62,7 @@ if __name__ == "__main__":
     # set up options
     parser.add_option('--path', action='store', dest='path', default='.',
                         help='path to start looking for files'),
-    parser.add_option('--period', action='store', dest='change_period', default=60,
+    parser.add_option('--period', action='store', dest='change_period', default=60, type='float',
                         help='time period to wait between checks'),
     parser.add_option('-c', '--command', action='store', dest='command',
                         help='command to execute'),
